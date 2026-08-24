@@ -1,0 +1,5 @@
+&spi0 {
+	status = "okay";
+	rx-dtc;
+	tx-dtc;
+};
