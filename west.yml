@@ -1,0 +1,18 @@
+manifest:
+  remotes:
+    - name: P-Harwood
+      url-base: https://github.com/P-Harwood
+
+  projects:
+    - name: zephyr
+      remote: P-Harwood
+      repo-path: zephyr_Exp
+      revision: benchmark-fork-v1
+      clone-depth: 1
+      import:
+        name-allowlist:
+          - cmsis_6
+          - hal_renesas
+
+  self:
+    path: applications/RA6M5_bench
