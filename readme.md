@@ -1,5 +1,27 @@
 # EK-RA6M5 CPU usage benchmark
 
+This project runs coremark benchmarker on the ek_ra6m5 
+
+## Initiate Commands
+This creates a new directory, downloads the application and the working Zephyr build at the time of creation. 
+Go into any new directory, e.g. Documents/test/ and run the following commands in a command prompt terminal:
+```
+mkdir coremark_Test
+cd coremark_Test
+python -m venv .venv
+.venv\Scripts\activate.bat
+pip install west
+west init -m https://github.com/P-Harwood/RA6M5-SPI-benchmarking
+cd applications\RA6M5_bench
+west update
+pip install -r ..\..\zephyr\scripts\requirements-base.txt
+west sdk install -t arm-zephyr-eabi
+west build -b ek_ra6m5 -d build\v1 -p always .
+west flash -d build\v1
+```
+
+
+
 ## Wiring
 
 - Jumper P202 to P203 (SPI0 loopback)
@@ -10,10 +32,10 @@
 
 From inside the application directory:
 
-
-  west build -b ek_ra6m5 -d build\v1 -p always .
-  west flash -d build\v1
-
+```
+west build -b ek_ra6m5 -d build\v1 -p always .
+west flash -d build\v1
+```
 
 ## Clocks
 
