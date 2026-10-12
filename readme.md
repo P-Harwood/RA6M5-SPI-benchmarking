@@ -15,7 +15,7 @@ west init -m https://github.com/P-Harwood/RA6M5-SPI-benchmarking
 cd applications\RA6M5_bench
 west update
 pip install -r ..\..\zephyr\scripts\requirements-base.txt
-west sdk install -t arm-zephyr-eabi
+west sdk install --version 1.0.1 -t arm-zephyr-eabi
 west build -b ek_ra6m5 -d build\v1 -p always .
 west flash -d build\v1
 ```
