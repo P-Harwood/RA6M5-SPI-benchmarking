@@ -57,8 +57,11 @@ The target SPI bit rate is 7.5Mbds.
 
 
 Source #1:  RA6M5 User Manual Rev.1.50, Page 151, Table 8.2 Clock generation circuit specifications for the internal clocks
+
 Source #2:  RA6M5 User Manual Rev.1.50, Page 1562, Chapter 34.2.8 SPBR : SPI Bit Rate Register
+
 Source #3:  RA6M5 User Manual Rev.1.50, Page 1639, Chapter 35.2.3 SFMSKC : Clock Control Register
+
 Source #4:  RA6M5 User Manual Rev.1.50, Page 1070, Table 30.8 Clock source settings
 
 ## ADC
