@@ -10,15 +10,10 @@
 
 From inside the application directory:
 
-```
-west build -b ek_ra6m5 -d build\v1 -p always .
-west flash -d build\v1
-```
 
+  west build -b ek_ra6m5 -d build\v1 -p always .
+  west flash -d build\v1
 
-## Note
-There is unused code in ek_ra6m5.overlay and prj.conf, this code, if uncommented use MPU 
-to protect the QSPI area from being cached.
 
 ## Clocks
 
