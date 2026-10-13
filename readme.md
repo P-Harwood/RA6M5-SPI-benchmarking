@@ -35,7 +35,7 @@ west flash -d build\v1
 
 - Jumper P202 to P203 (SPI0 loopback)
 - Jumper P613 to P614 (UART7 loopback)
-- UART to P411 and P410 for reading output
+- UART to P411 (Board's Tx) and P410 (Board's Rx) for reading output
 
 ## Build and flash
 
