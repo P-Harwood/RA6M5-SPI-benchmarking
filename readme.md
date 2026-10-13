@@ -1,6 +1,15 @@
 # EK-RA6M5 CPU usage benchmark
 
-This project runs coremark benchmarker on the ek_ra6m5 
+This project runs coremark benchmarker on the EK RA6M5.
+
+The EK RA6M5 is running Zephyr with the following peripherals:
+
+* PWM
+* ADC (FSP)
+* QSPI 
+* SPI
+* UART
+
 
 ## Initiate Commands
 This creates a new directory, downloads the application and the working Zephyr build at the time of creation. 
