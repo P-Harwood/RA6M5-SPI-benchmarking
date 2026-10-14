@@ -17,7 +17,7 @@ Go into any new directory, e.g. Documents/test/ and run the following commands i
 ```
 mkdir coremark_Test
 cd coremark_Test
-python -m venv .venv
+py -3.12 -m venv .venv
 .venv\Scripts\activate.bat
 pip install west
 west init -m https://github.com/P-Harwood/RA6M5-SPI-benchmarking
