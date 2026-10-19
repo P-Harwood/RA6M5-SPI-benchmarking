@@ -19,11 +19,14 @@
 
 &uart7 {
 	current-speed = <7500000>;
+	status = "disabled";
 };
 
 &adc0 {
 	status = "disabled";
 };
+
+
 
 &spi0 {
 	rx-dtc;

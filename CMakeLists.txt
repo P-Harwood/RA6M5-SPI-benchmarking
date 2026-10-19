@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.20.0)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(ra6m5_coremark_spi)
 
+if(ZEPHYR_TOOLCHAIN_VARIANT STREQUAL "iar")
+  zephyr_linker_section_configure(SECTION .rodata INPUT ".version")
+  target_sources(app PRIVATE src/bsp_irq_cfg_iar.c)
+endif()
+
 set(REQUIRED_SDK_VERSION 1.0.1)
 if(NOT SDK_VERSION VERSION_EQUAL REQUIRED_SDK_VERSION)
   message(FATAL_ERROR "This project needs Zephyr SDK ${REQUIRED_SDK_VERSION}. Install it with 'west sdk install --version 1.0.1 -t arm-zephyr-eabi'.")

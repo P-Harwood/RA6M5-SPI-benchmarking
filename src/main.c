@@ -167,9 +167,9 @@ void build_config_print(void)
 
 	printk("\n=== === UART Config === ===\n"
 		"UART config: %u baud,\n"
-		"Total packet size in bytes: %u,\n"
+		"Max packet size in bytes: %u,\n"
 		"UART period: %u ms\n\n",
-		UART_BAUD_HZ, UART_TX_LEN, UART_PERIOD_MS);
+		UART_BAUD_HZ, UART_MAX_LEN, UART_PERIOD_MS);
 
 	printk("\n=== === QSPI Config === ===\n"
 		"QSPI Clock = PCLKA/%u = %u Hz\n"
