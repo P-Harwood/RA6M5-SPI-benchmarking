@@ -35,6 +35,15 @@ static volatile uint32_t spi_occurances;
 
 volatile status_logs_t spi_status_log = { .log_name = "SPI_SV_" };
 
+/**
+ * @brief True when a tx_buf = rx_buf
+ */
+static bool spi_validation(uint32_t len)
+{
+	return memcmp(rx_data, tx_data, len) == 0;
+}
+
+
 void spi_service_entry(void *a, void *b, void *c)
 {
 	ARG_UNUSED(a);
@@ -57,11 +66,16 @@ void spi_service_entry(void *a, void *b, void *c)
 		/* Call the spi transcieve function*/
 		if (spi_transceive(spi_dev, &spi_cfg, &tx_set, &rx_set) != 0) {
 			spi_status_log.data.errors++;
+		} else if (!spi_validation(TRANSF_LEN)) {
+			/* The transfer worked, but the data that came back doesn't match what was sent */
+			spi_status_log.data.errors++;
 		}
 		/* Increment the actions log parameter*/
 		spi_status_log.data.actions++;
 	}
 }
+
+
 
 
 int spi_service_init(void)
