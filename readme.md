@@ -8,7 +8,7 @@ The EK RA6M5 is running Zephyr with the following peripherals:
 * ADC (FSP)
 * QSPI 
 * SPI
-* UART
+* UART (FSP)
 
 
 ## Initiate Commands
@@ -34,8 +34,9 @@ west flash -d build\v1
 ## Wiring
 
 - UART to P411 (Board's Tx) and P410 (Board's Rx) for reading output
-- Jumper P613 to P614 (UART7 loopback) . Will trigger UART7 RX interrupts to simulate  UART rx also.
-- Jumper P202 to P203 (SPI0 loopback) . Will trigger SPI0 RX interrupts to simulate SPI rx also
+- Jumper P613 to P614 (UART7 loopback) . Will trigger UART7 Rx interrupts to simulate  UART Rx also.
+- Jumper P202 to P203 (SPI0 loopback) . Will trigger SPI0 Rx interrupts to simulate SPI Rx also
+- PWM output is on pin P415
 
 
 
@@ -96,6 +97,17 @@ Source #4:  RA6M5 User Manual Rev.1.50, Page 1070, Table 30.8 Clock source setti
 
 The adc in this example is using FSP calls. This is because the Rensas Zephyr upstream code does not offer continous support, 
 FSP calls are localised to the initialisation. Upstream Zephyr implementation hardcodes Single scan in its source code.
+
+## UART 
+The UART in this example is using FSP calls. This is because the Rensas Zephyr upstream code requires CPU interrupts to count
+how many bytes have been transfered, and will compare this count to the Rx transfer size it has been provided. It uses the DTC
+to move the data out of the register Rx buffer. However, the CPU usage is still impacted as the DTC passes the interrupt from 
+every transfered byte to the CPU after it has moved the data.
+
+This project instead uses FSP calls to setup the UART and the DTC is configured to handle the incoming data, which it can do 
+only with a fixed max buffer size. The current configuration of the project transmits buffers with ranging lengths of 722 - 1024
+bytes, but framed inside a 1024 byte buffer. Default Unassigned bits are given the value of 0. This approach results in only one
+interrupt per Rx.
 
 ## DMA vs DTC
 

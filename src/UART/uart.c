@@ -26,7 +26,8 @@ static const char UART_MSG[] = "UART TX";
 
 
 /* buffer for rx and tx, set to be the max possible size*/
-static uint8_t tx_data[UART_MAX_LEN] __aligned(4);
+static uint8_t tx_short[UART_MAX_LEN] __aligned(4);
+static uint8_t tx_long[UART_MAX_LEN] __aligned(4);
 static uint8_t rx_data[UART_MAX_LEN] __aligned(4);
 
 /* Set by the thread when a write starts, cleared by uart_cb once the last byte has left the pin */
@@ -49,7 +50,7 @@ static baud_setting_t uart_baud_setting;	/* Filled in by R_SCI_UART_BaudCalculat
 /**
  * @brief FSP calls this from the UART interrupts.
  *	RX_COMPLETE: the DTC has filled rx_data, so flag it for the thread.
- *	TX_COMPLETE: the last byte of tx_data has left the pin, so the thread can write again.
+ *	TX_COMPLETE: the last byte of the frame has left the pin, so the thread can write again.
  *	Receive errors: overrun, framing, parity or break seen on the RX pin.
  */
 static void uart_cb(uart_callback_args_t *p_args)
@@ -93,7 +94,7 @@ static const transfer_instance_t uart_rx_dtc = {
 };
 
 
-/* TX DTC: tx_data -> SCI7 transmit register, one CPU interrupt once the whole write has gone */
+/* TX DTC: the frame being sent -> SCI7 transmit register, one CPU interrupt once the whole write has gone */
 static dtc_instance_ctrl_t uart_tx_dtc_ctrl;
 
 static transfer_info_t uart_tx_dtc_info = {
@@ -153,31 +154,31 @@ static const uart_cfg_t uart_cfg = {
 	.p_extend = &uart_cfg_extend,
 };
 
-
-static uint32_t uart_next_frame_len(uint32_t len)
+/** @brief return pointer to the frame to transmit */
+static const uint8_t *uart_next_frame(const uint8_t *frame)
 {
-	return (len >= UART_MAX_LEN) ? UART_MIN_LEN : (len + 1U);
+	return (frame == tx_short) ? tx_long : tx_short;
 }
 
 /**
- * @brief True when a whole frame has been received since the last write, and it matches tx_data.
+ * @brief True when a whole frame has been received since the last write, and it matches the frame that was sent.
  */
-static bool uart_rx_frame_ok(uint32_t len)
+static bool uart_rx_frame_ok(const uint8_t *frame)
 {
-	return uart_rx_done && (memcmp(rx_data, tx_data, len) == 0);
+	return uart_rx_done && (memcmp(rx_data, frame, UART_MAX_LEN) == 0);
 }
 
 /**
  * @brief Throw away what the current read holds and then start the uart listening
  */
-static bool uart_prepare_rx(uint32_t len)
+static bool uart_prepare_rx(void)
 {
 	/* Terminate uart and discard current buffer*/
 	(void)R_SCI_UART_Abort(&uart_ctrl, UART_DIR_RX);
 	uart_rx_done = false;
 
 	/* UART starts listening to rx (Async)*/
-	if (R_SCI_UART_Read(&uart_ctrl, rx_data, len) != FSP_SUCCESS) {
+	if (R_SCI_UART_Read(&uart_ctrl, rx_data, UART_MAX_LEN) != FSP_SUCCESS) {
 		uart_status_log.data.errors++;
 		return false;
 	}
@@ -186,14 +187,14 @@ static bool uart_prepare_rx(uint32_t len)
 }
 
 /**
- * @brief Start sending tx_data.
+ * @brief Start sending a frame.
  * @retval bool, true if the write started.
  */
-static bool uart_tx_frame(uint32_t len)
+static bool uart_tx_frame(const uint8_t *frame)
 {
 	uart_tx_busy = true;
 
-	if (R_SCI_UART_Write(&uart_ctrl, tx_data, len) != FSP_SUCCESS) {
+	if (R_SCI_UART_Write(&uart_ctrl, frame, UART_MAX_LEN) != FSP_SUCCESS) {
 		uart_tx_busy = false;
 		uart_status_log.data.errors++;
 		return false;
@@ -205,7 +206,7 @@ static bool uart_tx_frame(uint32_t len)
 
 void uart_service_entry(void *a, void *b, void *c)
 {
-	uint32_t frame_len = UART_MAX_LEN;
+	const uint8_t *frame = tx_long;
 	bool frame_sent = false;	/* A frame went out last period, so it should be back on RX by now */
 
 	ARG_UNUSED(a);
@@ -231,18 +232,19 @@ void uart_service_entry(void *a, void *b, void *c)
 			uart_status_log.data.errors++;
 		} else {
 			/* The frame sent last period should have come back on RX, check it before sending the next */
-			if (frame_sent && !uart_rx_frame_ok(frame_len)) {
+			if (frame_sent && !uart_rx_frame_ok(frame)) {
 				uart_status_log.data.errors++;
 			}
 
-			frame_len = uart_next_frame_len(frame_len);
+			/* Change which frame to transmit*/
+			frame = uart_next_frame(frame);
 
 			/* UART listens async, interrupt when new message*/
-			frame_sent = uart_prepare_rx(frame_len);
+			frame_sent = uart_prepare_rx();
 
 			/* Transmit the uart buffer*/
 			if (frame_sent) {
-				frame_sent = uart_tx_frame(frame_len);
+				frame_sent = uart_tx_frame(frame);
 			}
 		}
 
@@ -304,8 +306,10 @@ int uart_service_init(void)
 	for (uint32_t i = 0U; i < UART_MAX_LEN; i += UART_MSG_LEN) {
 		uint32_t n = MIN(UART_MSG_LEN, UART_MAX_LEN - i);
 
-		memcpy(&tx_data[i], UART_MSG, n);
+		memcpy(&tx_long[i], UART_MSG, n);
 	}
+
+	memcpy(tx_short, tx_long, UART_MIN_LEN);
 
 	ret = start_UART_FSP();
 	if (ret != 0) {
