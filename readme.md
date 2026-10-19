@@ -35,10 +35,8 @@ west flash -d build\v1
 
 - UART to P411 (Board's Tx) and P410 (Board's Rx) for reading output
 - Jumper P613 to P614 (UART7 loopback) . Will trigger UART7 RX interrupts to simulate  UART rx also.
-  
-## Optional Wiring
-
 - Jumper P202 to P203 (SPI0 loopback) . Will trigger SPI0 RX interrupts to simulate SPI rx also
+
 
 
 ## Build and flash
