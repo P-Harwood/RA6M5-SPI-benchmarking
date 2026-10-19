@@ -50,7 +50,7 @@ static baud_setting_t uart_baud_setting;	/* Filled in by R_SCI_UART_BaudCalculat
 /**
  * @brief FSP calls this from the UART interrupts.
  *	RX_COMPLETE: the DTC has filled rx_data, so flag it for the thread.
- *	TX_COMPLETE: the last byte of the frame has left the pin, so the thread can write again.
+ *	TX_COMPLETE: the last byte of the tx_data has left the pin, so the thread can write again.
  *	Receive errors: overrun, framing, parity or break seen on the RX pin.
  */
 static void uart_cb(uart_callback_args_t *p_args)
@@ -94,7 +94,7 @@ static const transfer_instance_t uart_rx_dtc = {
 };
 
 
-/* TX DTC: the frame being sent -> SCI7 transmit register, one CPU interrupt once the whole write has gone */
+/* TX DTC: the frame being sent -> SCI7 transmit register, only one CPU interrupt per frame */
 static dtc_instance_ctrl_t uart_tx_dtc_ctrl;
 
 static transfer_info_t uart_tx_dtc_info = {
