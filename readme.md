@@ -17,7 +17,7 @@ Go into any new directory, e.g. Documents/test/ and run the following commands i
 ```
 mkdir coremark_Test
 cd coremark_Test
-python -m venv .venv
+py -3.12 -m venv .venv
 .venv\Scripts\activate.bat
 pip install west
 west init -m https://github.com/P-Harwood/RA6M5-SPI-benchmarking
@@ -33,9 +33,13 @@ west flash -d build\v1
 
 ## Wiring
 
-- Jumper P202 to P203 (SPI0 loopback)
-- Jumper P613 to P614 (UART7 loopback)
 - UART to P411 (Board's Tx) and P410 (Board's Rx) for reading output
+
+## Optional Wiring
+
+- Jumper P202 to P203 (SPI0 loopback) . Will trigger SPI0 RX interrupts to simulate SPI rx also
+- Jumper P613 to P614 (UART7 loopback) . Will trigger UART7 RX interrupts to simulate  UART rx also.
+  - To enable the DTC on UART transmissions, uart_rx_enable must be called. Consider this if altering the application
 
 ## Build and flash
 
